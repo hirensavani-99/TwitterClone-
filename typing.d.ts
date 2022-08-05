@@ -5,7 +5,8 @@ export interface Tweet extends TweetBody {
     _rev: string
     _type: 'tweet'
     blockTweet: boolean,
-    likes: array
+    likes: array,
+    retweetedBy: array
 }
 
 export type TweetBody = {

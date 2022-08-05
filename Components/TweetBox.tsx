@@ -49,10 +49,7 @@ export default function TweetBox({ setTweets }: Props) {
 
         const json = await result.json()
 
-        const newTweets = await fetchTweets();
-
-        console.log(json);
-        
+        const newTweets = await fetchTweets();        
 
         setTweets(newTweets)
 

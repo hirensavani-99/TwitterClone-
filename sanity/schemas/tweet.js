@@ -31,14 +31,24 @@ export default {
       type: 'string'
     },
     {
+      name: 'retweetedBy',
+      title: 'Retweet',
+      type: 'array',
+      of: [
+        {
+          type: 'string'
+        }
+      ]
+    },
+    {
       name: 'likes',
       title: 'Tweet Likes',
       type: 'array',
-      of: [ 
-      {
-        type: 'string'
-      }
-    ]
+      of: [
+        {
+          type: 'string'
+        }
+      ]
     }
 
   ]

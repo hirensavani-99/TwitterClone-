@@ -7,9 +7,11 @@ import {
     SwitchHorizontalIcon,
     UploadIcon
 } from '@heroicons/react/outline'
+import { SwitchHorizontalIcon as SwitchHorizontalIcon1, HeartIcon as HeartIcon1 } from '@heroicons/react/solid'
 import { fetchComments } from '../utils/fetchComments'
 import { useSession } from 'next-auth/react'
 import toast from 'react-hot-toast'
+
 
 
 
@@ -23,7 +25,8 @@ function TweetComponent({ tweet, handleReferesh }: Props) {
     const [commetBoxVisible, setCommentBoxVisible] = useState<boolean>(false)
     const [input, setInput] = useState<string>('')
     const { data: session } = useSession()
-    let copyTweetlikes = [].concat(tweet.likes)
+    let copyTweetlikes = [].concat(tweet?.likes)
+    let copyReTweet = [].concat(tweet?.retweetedBy)
 
 
 
@@ -71,7 +74,7 @@ function TweetComponent({ tweet, handleReferesh }: Props) {
 
     }
 
-    const PatchLikes = async () => {
+    const patchLikes = async () => {
         const Likes = {
             _id: tweet._id,
             likes: copyTweetlikes
@@ -85,9 +88,6 @@ function TweetComponent({ tweet, handleReferesh }: Props) {
         })
 
         const json = await result.json()
-        console.log(json);
-        //console.log(tweet.likes);
-
 
         return json
     }
@@ -96,27 +96,15 @@ function TweetComponent({ tweet, handleReferesh }: Props) {
         e.preventDefault()
         handleReferesh()
         if (copyTweetlikes.includes(session?.user?.name)) {
-
-            console.log(copyTweetlikes, 'pro1');
             copyTweetlikes = copyTweetlikes.filter(user => (user != session?.user?.name) && (user != undefined || null))
-
-            console.log(copyTweetlikes, 'procees2');
-
-            PatchLikes()
+            patchLikes()
             toast('Disliked')
 
-
-
         } else {
-            console.log(copyTweetlikes, 'procees3');
-
+            copyTweetlikes = copyTweetlikes.filter(user => user != null)
             copyTweetlikes.push(session?.user?.name)
-
-            console.log(copyTweetlikes, 'procees4');
-
-            PatchLikes()
+            patchLikes()
             toast('Liked')
-
         }
 
 
@@ -126,9 +114,53 @@ function TweetComponent({ tweet, handleReferesh }: Props) {
 
     }
 
+    const patchReTweet = async () => {
+        const reTweet = {
+            _id: tweet._id,
+            retweetedBy: copyReTweet
+
+        }
+
+
+        const result = await fetch(`/api/addReTweet`, {
+            body: JSON.stringify(reTweet),
+            method: 'POST',
+        })
+
+        const json = await result.json()
+
+        return json
+    }
+
+    const handleReTweet = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+        e.preventDefault()
+        handleReferesh()
+        if (copyReTweet.includes(session?.user?.name)) {
+            copyReTweet = copyReTweet.filter(user => (user != session?.user?.name) && (user != undefined || null))
+            patchReTweet()
+            toast('ReTweet removed')
+
+        } else {
+            copyReTweet = copyReTweet.filter(user => user != null)
+            copyReTweet.push(session?.user?.name)
+            patchReTweet()
+            toast('Retweet added')
+        }
+
+
+        handleReferesh()
+
+
+        copyReTweet = []
+    }
 
     return (
         <div className='flex flex-col space-x-3 border-y p-5 border-gray-100'>
+            <div className='mb-5'>
+                {tweet?.retweetedBy?.length > 1 && <p>re-tweeted by @{tweet?.retweetedBy[0]} and {tweet?.retweetedBy.length -1} more</p>}
+                {tweet?.retweetedBy?.length === 1 && <p>re-tweeted by @{tweet?.retweetedBy[0]}</p>}
+            </div>
+
             <div className='flex space-x-3'>
                 <img className="h-10 w-10 rounded-full object-cover" src={tweet.profileImage} alt="" />
                 <div>
@@ -148,13 +180,15 @@ function TweetComponent({ tweet, handleReferesh }: Props) {
                 </div>
 
                 <div onClick={handleLikes} className='flex cursor-pointer items-center space-x-3 text-gray-400'>
-                    <HeartIcon className='h-5 w-5' />
+                    {tweet?.likes?.includes(session?.user?.name) ? <HeartIcon1 className='h-5 w-5 text-red-500' /> : <HeartIcon className='h-5 w-5' />}
+
                     <p>{tweet.likes?.length}</p>
                 </div>
 
-                <div className='flex cursor-pointer items-center space-x-3 text-gray-400'>
-                    <SwitchHorizontalIcon className='h-5 w-5' />
-                    <p>10</p>
+                <div onClick={handleReTweet} className='flex cursor-pointer items-center space-x-3 text-gray-400'>
+                    {tweet?.retweetedBy?.includes(session?.user?.name) ? <SwitchHorizontalIcon1 className='h-5 w-5 text-twitter' /> : <SwitchHorizontalIcon className='h-5 w-5' />}
+
+                    <p>{tweet?.retweetedBy?.length}</p>
                 </div>
 
                 <div className='flex cursor-pointer items-center space-x-3 text-gray-400'>
@@ -180,7 +214,7 @@ function TweetComponent({ tweet, handleReferesh }: Props) {
 
                             <div key={comment._id} className='flex relative space-x-2'>
                                 <hr className='absolute left-5 top-10 h-8 border-x border-twitter/30' />
-                                <img src={comment.profileImage} alt="" className='mt-2 h-7 w-7 object-cover rounded-full' />
+                                <img src={comment.profileImg} alt="" className='mt-2 h-7 w-7 object-cover rounded-full' />
 
                                 <div>
                                     <div className='flex items-center space-x-1'>

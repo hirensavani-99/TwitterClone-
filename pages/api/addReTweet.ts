@@ -30,7 +30,7 @@ export default async function handler(
                     patch: {
                         id: data._id,
                         set: {
-                            likes: data.likes
+                            retweetedBy: data.retweetedBy
                         },
                     },
                 },
@@ -40,7 +40,7 @@ export default async function handler(
     })
 
     const json = await result.json();
-   
+
 
     res.status(200).json({ message: 'added' })
 }
